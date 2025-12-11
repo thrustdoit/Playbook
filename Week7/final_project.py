@@ -1,201 +1,166 @@
-# --------------------------------------------------------------
-# service_learning_final.py
-# Final Integrated Service-Learning Prototype (Weeks 1–7)
+# final_project.py
+# Service-Learning Project – Final Version
 # Author: Mohamed Kaba
-#
-# Features:
-# - User input and menu system
-# - Arithmetic and logical operations
-# - Conditional statements (if/elif/else)
-# - Loops and iteration
-# - Modular functions with parameters and returns
-# - Dictionaries and tuples for structured data
-# - File I/O (save/load JSON)
-# - Exception handling
-# - Fully debugged and formatted
-# --------------------------------------------------------------
-
-import json
-
-DATA_FILE = "resources.json"
+# Purpose: Event Sign-In Tracker using lists, dictionaries, tuples, loops, and exception handling.
 
 
-# --------------------------------------------------------------
-# Load existing data from file
-# --------------------------------------------------------------
-def load_resources():
+# -----------------------------------------------------------
+# DATA STRUCTURES
+# -----------------------------------------------------------
+
+# Tuple: event details
+event_info = ("Community Workshop", "Hocking College", "12/15/2025")
+
+# List: holds dictionaries for each student
+attendance_list = []
+
+
+# -----------------------------------------------------------
+# FUNCTIONS
+# -----------------------------------------------------------
+
+def display_event_details():
+    """Show event tuple details."""
+    print("\n--- Event Information ---")
+    print(f"Event Name : {event_info[0]}")
+    print(f"Location   : {event_info[1]}")
+    print(f"Date       : {event_info[2]}")
+    print("--------------------------\n")
+
+
+def add_student():
+    """Add a student to the attendance list with error handling."""
     try:
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}   # No file yet
-    except json.JSONDecodeError:
-        print("Warning: Data file unreadable. Starting fresh.")
-        return {}
+        name = input("Enter student name: ").strip()
+        if name == "":
+            raise ValueError("Name cannot be empty.")
+
+        major = input("Enter major: ").strip()
+        year = input("Enter class year (e.g., Freshman, Sophomore): ").strip()
+
+        # Dictionary for each student
+        student_record = {
+            "name": name,
+            "major": major,
+            "year": year
+        }
+
+        attendance_list.append(student_record)
+
+        print(f"\n✔ {name} has been added.\n")
+
+    except ValueError as e:
+        print(f"Error: {e}\n")
 
 
-# --------------------------------------------------------------
-# Save data to file
-# --------------------------------------------------------------
-def save_resources(data):
+def remove_student():
+    """Remove a student by name with validation."""
     try:
-        with open(DATA_FILE, "w") as f:
-            json.dump(data, f, indent=4)
-    except Exception as e:
-        print("Error saving data:", e)
+        target = input("Enter the name to remove: ").strip()
+        removed = False
+
+        for student in attendance_list:
+            if student["name"].lower() == target.lower():
+                attendance_list.remove(student)
+                removed = True
+                print(f"\n✔ {target} has been removed.\n")
+                break
+
+        if not removed:
+            raise LookupError("Student not found.")
+
+    except LookupError as e:
+        print(f"Error: {e}\n")
 
 
-# Load resources at program start
-resources = load_resources()
+def display_all():
+    """Display all students currently signed in."""
+    print("\n--- Attendance List ---")
 
-
-# --------------------------------------------------------------
-# Core Functions
-# --------------------------------------------------------------
-def add_resource(resource_id, description, priority):
-    """
-    Adds a resource to the main dictionary.
-    """
-    resources[resource_id] = (description, priority)
-    save_resources(resources)
-
-
-def remove_resource(resource_id):
-    """
-    Removes a resource if it exists.
-    Returns True if successful, False otherwise.
-    """
-    try:
-        del resources[resource_id]
-        save_resources(resources)
-        return True
-    except KeyError:
-        return False
-
-
-def display_resources():
-    """
-    Prints all stored resources in a clean format.
-    """
-    print("\n=== Community Resource List ===")
-
-    if not resources:
-        print("No resources found.")
+    if len(attendance_list) == 0:
+        print("No students signed in yet.")
     else:
-        for rid, details in resources.items():
-            print(f"ID {rid}: {details[0]} (Priority: {details[1]})")
+        for i, student in enumerate(attendance_list, start=1):
+            print(f"{i}. {student['name']} | {student['major']} | {student['year']}")
 
-    print("--------------------------------")
-
-
-def search_resource(keyword):
-    """
-    Searches resources by keyword.
-    Returns a list of matches.
-    """
-    results = []
-
-    for rid, details in resources.items():
-        if keyword.lower() in details[0].lower():
-            results.append((rid, details))
-
-    return results
+    print("-------------------------\n")
 
 
-# --------------------------------------------------------------
-# Menu Loop
-# --------------------------------------------------------------
-def menu():
+def save_report():
+    """Save attendance to a text file."""
+    try:
+        filename = "attendance_report.txt"
+
+        with open(filename, "w") as file:
+            file.write("=== Attendance Report ===\n")
+            file.write(f"Event: {event_info[0]} at {event_info[1]} on {event_info[2]}\n\n")
+
+            if len(attendance_list) == 0:
+                file.write("No attendees recorded.\n")
+            else:
+                for student in attendance_list:
+                    line = f"{student['name']} - {student['major']} - {student['year']}\n"
+                    file.write(line)
+
+        print(f"\n✔ Report saved as {filename}\n")
+
+    except Exception as e:
+        print(f"Unexpected error while saving: {e}\n")
+
+
+# -----------------------------------------------------------
+# MAIN MENU LOOP
+# -----------------------------------------------------------
+
+def main():
+    print("===================================")
+    print("   EVENT SIGN-IN TRACKING SYSTEM   ")
+    print("===================================\n")
 
     while True:
+        try:
+            print("Choose an option:")
+            print("1. View Event Info")
+            print("2. Add Student")
+            print("3. Remove Student")
+            print("4. View Attendance List")
+            print("5. Save Report")
+            print("6. Exit\n")
 
-        print("\n=== Service-Learning Resource Manager ===")
-        print("1. Add Resource")
-        print("2. Remove Resource")
-        print("3. View All Resources")
-        print("4. Search Resources")
-        print("5. Exit Program")
+            choice = int(input("Enter choice (1-6): "))
 
-        choice = input("Enter choice (1-5): ").strip()
+            if choice == 1:
+                display_event_details()
 
-        # Validate numeric input
-        if not choice.isdigit():
-            print("Invalid input. Please enter a number.")
-            continue
+            elif choice == 2:
+                add_student()
 
-        choice = int(choice)
+            elif choice == 3:
+                remove_student()
 
-        # ----------------------------
-        # Option 1: Add Resource
-        # ----------------------------
-        if choice == 1:
-            try:
-                rid = int(input("Enter new resource ID: "))
-                desc = input("Enter description: ")
-                priority = input("Enter priority (High/Medium/Low): ")
+            elif choice == 4:
+                display_all()
 
-                add_resource(rid, desc, priority)
-                print("Resource added successfully.")
+            elif choice == 5:
+                save_report()
 
-            except ValueError:
-                print("Invalid ID. Please enter a numeric ID.")
+            elif choice == 6:
+                print("\nExiting program... Goodbye!\n")
+                break
 
-        # ----------------------------
-        # Option 2: Remove Resource
-        # ----------------------------
-        elif choice == 2:
-            try:
-                rid = int(input("Enter resource ID to remove: "))
-
-                if remove_resource(rid):
-                    print("Resource removed successfully.")
-                else:
-                    print("Resource ID not found.")
-
-            except ValueError:
-                print("Invalid ID.")
-
-        # ----------------------------
-        # Option 3: Display Resources
-        # ----------------------------
-        elif choice == 3:
-            display_resources()
-
-        # ----------------------------
-        # Option 4: Search Resources
-        # ----------------------------
-        elif choice == 4:
-            keyword = input("Enter keyword to search: ")
-            matches = search_resource(keyword)
-
-            if matches:
-                print("\nSearch Results:")
-                for rid, details in matches:
-                    print(f"ID {rid}: {details[0]} (Priority: {details[1]})")
             else:
-                print("No matching resources found.")
+                print("\nChoose a valid option (1-6).\n")
 
-        # ----------------------------
-        # Option 5: Exit
-        # ----------------------------
-        elif choice == 5:
-            print("\nExiting program... Goodbye.")
-            break
+        except ValueError:
+            print("\nInvalid input — numbers only please.\n")
 
-        # ----------------------------
-        # Invalid Option
-        # ----------------------------
-        else:
-            print("Please choose a valid option (1–5).")
+        except Exception as e:
+            print(f"\nUnexpected error: {e}\n")
 
 
-# --------------------------------------------------------------
-# Main Program
-# --------------------------------------------------------------
-def main():
-    print("\n=== Final Integrated Service-Learning Prototype ===")
-    menu()
+# -----------------------------------------------------------
+# RUN PROGRAM
+# -----------------------------------------------------------
 
-
-# Run the program
-main()
+if __name__ == "__main__":
+    main()
