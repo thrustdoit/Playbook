@@ -1,76 +1,132 @@
-# ----------------------------------------------------------
-# prototype_structures.py
-# Purpose: Service-Learning Prototype using dictionaries,
-#          tuples, and exception handling.
-# Author: Mohamed Kaba
-# ----------------------------------------------------------
+"""
+Prototype – Service Learning Resource Tracker
+Purpose: Build early version of the final project using dictionaries, tuples,
+basic functions, and try/except handling.
+"""
 
-# Sample structured data (tuples inside a dictionary)
-# Each entry represents a community resource or task:
-# (description, priority level)
-resources = {
-    1: ("Food distribution site", "High"),
-    2: ("After-school tutoring", "Medium"),
-    3: ("Community clean-up event", "Low")
-}
+from datetime import datetime
 
+# ------------------------------
+# Data Structures
+# ------------------------------
 
-# Function: Add a new resource using a tuple
-def add_resource(resource_id, description, priority):
-    resources[resource_id] = (description, priority)
-    return resources
+# Tuple: allowed priority options for validation
+PRIORITIES = ("High", "Medium", "Low")
+
+# List of dictionaries: each dictionary = one resource record
+resources = []
+
+next_id = 1  # auto-incrementing ID counter
 
 
-# Function: Remove a resource by ID
+# ------------------------------
+# Core Prototype Functions
+# ------------------------------
+
+def add_resource(name, priority):
+    """
+    Adds a new resource object to the prototype.
+    Uses dictionary + tuple validation.
+    """
+    global next_id
+
+    if priority not in PRIORITIES:
+        print("Invalid priority. Use High/Medium/Low.\n")
+        return
+
+    record = {
+        "ID": next_id,
+        "name": name,
+        "priority": priority,
+        "created": datetime.now().strftime("%Y-%m-%d %H:%M")
+    }
+
+    resources.append(record)
+    print(f"Added resource #{next_id}.\n")
+
+    next_id += 1
+
+
 def remove_resource(resource_id):
+    """
+    Removes a resource by ID.
+    Demonstrates basic exception handling.
+    """
     try:
-        del resources[resource_id]
-        return True
-    except KeyError:
-        return False
+        resource_id = int(resource_id)
+    except ValueError:
+        print("Error: ID must be a number.\n")
+        return
+
+    for item in resources:
+        if item["ID"] == resource_id:
+            resources.remove(item)
+            print("Resource removed.\n")
+            return
+
+    print("No resource found with that ID.\n")
 
 
-# Function: Display all resources
 def display_resources():
-    print("\n=== Current Community Resources ===")
-    for key, value in resources.items():
-        print(f"ID {key}: {value[0]}  (Priority: {value[1]})")
-    print("------------------------------------")
+    """
+    Displays all stored prototype records.
+    """
+    if not resources:
+        print("No resources yet.\n")
+        return
+
+    print("\n--- Prototype Resource List ---")
+    for item in resources:
+        print(f"ID {item['ID']}: {item['name']} (Priority: {item['priority']})")
+    print()
 
 
-# Main program demonstrating prototype workflow
-def main():
+# ------------------------------
+# Simple Prototype Menu
+# ------------------------------
 
-    print("\n=== Service-Learning Prototype (Tuples & Dictionaries) ===")
+def menu():
+    """
+    Small interactive menu for prototype testing.
+    Uses try/except to prevent crashes.
+    """
+    while True:
+        print("""
+--- Prototype Menu ---
+1. Add Resource
+2. Remove Resource
+3. Display Resources
+4. Exit
+""")
 
-    # Show starting data
-    display_resources()
+        choice = input("Choose an option: ")
 
-    # Attempt to add a new resource
-    print("\nAdding new resource...")
-    add_resource(4, "Clothing donation drop-off", "High")
+        try:
+            if choice == "1":
+                name = input("Enter resource name: ")
+                priority = input("Enter priority (High/Medium/Low): ")
+                add_resource(name, priority)
 
-    # Display updated resources
-    display_resources()
+            elif choice == "2":
+                rid = input("Enter ID to remove: ")
+                remove_resource(rid)
 
-    # Try/Except example for removing an ID
-    print("\nTrying to remove resource with ID 10...")
-    try:
-        success = remove_resource(10)
-        if not success:
-            raise KeyError("Resource ID does not exist.")
-    except KeyError as e:
-        print("Error:", e)
+            elif choice == "3":
+                display_resources()
 
-    # Correct removal
-    print("\nRemoving resource with ID 2...")
-    remove_resource(2)
+            elif choice == "4":
+                print("Exiting prototype...")
+                break
 
-    # Final display
-    display_resources()
+            else:
+                print("Invalid option.\n")
 
-    print("\nPrototype completed successfully without errors.")
+        except Exception as e:
+            print(f"Unexpected error: {e}\n")
 
 
-# Run the program
-main()
+# ------------------------------
+# Run Prototype
+# ------------------------------
+
+menu()
